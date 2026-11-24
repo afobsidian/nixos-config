@@ -6,6 +6,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Use Omarchy’s stock theme handling.
+  programs.nixarchyThemeEngine.enable = false;
+
   programs.nixarchy = {
     enable = true;
     user = "adamf";
