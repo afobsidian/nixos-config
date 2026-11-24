@@ -20,6 +20,16 @@
   networking.hostName = "nixos";
 
   networking.networkmanager.enable = true;
+  networking.firewall.interfaces.enp4s0.allowedTCPPorts = [ 22 ];
+  services.openssh = {
+    enable = true;
+    openFirewall = false;
+    settings = {
+      PermitRootLogin = "no";
+      AllowUsers = [ "adamf" ];
+      PasswordAuthentication = true;
+    };
+  };
 
   time.timeZone = "Australia/Sydney";
 
