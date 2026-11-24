@@ -15,6 +15,7 @@
     flake = "/home/adamf/nixos-config";
     menu.default = "omarchy";
     defaultAgent = "codex";
+    shellIntegration = false;
   };
 
   networking.hostName = "nixos";
@@ -67,8 +68,21 @@
     pulse.enable = true;
   };
 
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestions.enable = true;
+    promptInit = ''
+      if [[ $TERM != dumb ]]; then
+        eval "$(${pkgs.starship}/bin/starship init zsh)"
+      fi
+    '';
+    shellAliases.ls = "eza";
+  };
+
   users.users."adamf" = {
     isNormalUser = true;
+    shell = pkgs.zsh;
     description = "Adam Farrell";
     extraGroups = [
       "networkmanager"
@@ -79,8 +93,10 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
+    bubblewrap
     codex
     localsend
+    nodejs
     pdfcraft
   ];
 
