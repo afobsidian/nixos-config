@@ -74,9 +74,6 @@
       "networkmanager"
       "wheel"
     ];
-    packages = with pkgs; [
-      kdePackages.kate
-    ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -84,6 +81,7 @@
   environment.systemPackages = with pkgs; [
     codex
     localsend
+    pdfcraft
   ];
 
   system.stateVersion = "26.05";
