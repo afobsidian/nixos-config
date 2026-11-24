@@ -15,6 +15,31 @@
     "hypr/looknfeel.lua".source = ./dotfiles/hypr/looknfeel.lua;
   };
 
+  # Mask both the bundled desktop IDs and the copies seeded in the home directory.
+  xdg.dataFile =
+    let
+      shortcuts = [
+        "Basecamp"
+        "Discord"
+        "Google Contacts"
+        "Google Maps"
+        "Google Messages"
+        "Google Photos"
+        "HEY"
+        "WhatsApp"
+        "X"
+        "YouTube"
+        "Zoom"
+      ];
+      desktopIds = shortcuts ++ map (name: "omarchy-${name}") shortcuts;
+    in
+    lib.genAttrs (map (id: "applications/${id}.desktop") desktopIds) (_: {
+      text = ''
+        [Desktop Entry]
+        Hidden=true
+      '';
+    });
+
   # Omarchy saves the entire layout when you edit the bar. Give it a writable copy.
   home.activation.omarchyShellLayout = lib.hm.dag.entryAfter [ "nixarchySeed" ] ''
     layout="${config.xdg.configHome}/omarchy/shell.json"
