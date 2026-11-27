@@ -1,57 +1,65 @@
-{ config, lib, ... }:
+{ lib, nixarchy, pkgs, ... }:
 
 {
-  home.stateVersion = "26.05";
-  services.nixi.enable = false;
-
+  # Nixarchy adds these preinstalls to the system profile.
   programs.nixarchy = {
-    enable = true;
-    # Use the built-in Omarchy widgets. Disable each plugin the port offers.
-    defaultPlugins = lib.mapAttrs (_: _: false) config.programs.nixarchy.defaultPluginSet;
+    preinstallsExclude = [ "pinta" "cliamp" "libreoffice" ];
+    apps = {
+      cards.enable = false;
+      checkmate.enable = false;
+      hype.enable = false;
+      monologue.enable = false;
+    };
   };
 
-  xdg.configFile = {
-    "hypr/monitors.lua".source = ./dotfiles/hypr/monitors.lua;
-    "hypr/looknfeel.lua".source = ./dotfiles/hypr/looknfeel.lua;
+  xdg.mime.defaultApplications = {
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "ai.storyteller.wordcraft.desktop";
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = "ai.storyteller.gridcraft.desktop";
   };
 
-  # Mask both the bundled desktop IDs and the copies seeded in the home directory.
-  xdg.dataFile =
-    let
-      shortcuts = [
-        "Basecamp"
-        "Discord"
-        "Google Contacts"
-        "Google Maps"
-        "Google Messages"
-        "Google Photos"
-        "HEY"
-        "WhatsApp"
-        "X"
-        "YouTube"
-        "Zoom"
-      ];
-      desktopIds = shortcuts ++ map (name: "omarchy-${name}") shortcuts;
-    in
-    lib.genAttrs (map (id: "applications/${id}.desktop") desktopIds) (_: {
-      text = ''
-        [Desktop Entry]
-        Hidden=true
-      '';
-    });
+  home-manager.users.adamf = { config, ... }: {
+    imports = [ nixarchy.homeManagerModules.nixarchy ];
 
-  # Omarchy saves the entire layout when you edit the bar. Give it a writable copy.
-  home.activation.omarchyShellLayout = lib.hm.dag.entryAfter [ "nixarchySeed" ] ''
-    layout="${config.xdg.configHome}/omarchy/shell.json"
-    if ! cmp -s ${./dotfiles/omarchy/shell.json} "$layout"; then
-      if [[ -f "$layout" && ! -e "$layout.before-nixos-config" ]]; then
-        run cp -p "$layout" "$layout.before-nixos-config"
-      fi
-      if [[ ! -v DRY_RUN ]]; then
-        temp=$(mktemp "$layout.XXXXXX")
-        install -m 0644 ${./dotfiles/omarchy/shell.json} "$temp"
-        mv -T "$temp" "$layout"
-      fi
-    fi
-  '';
+    home.packages = with pkgs; [
+      bubblewrap
+      codex
+      devenv
+      gridcraft
+      localsend
+      nodejs
+      pdfcraft
+      wordcraft
+    ];
+
+    home.stateVersion = "26.05";
+    # Keep the cursor visible when display settings change.
+    xdg.configFile."hypr/looknfeel.lua".text = ''
+      hl.config({ cursor = { no_hardware_cursors = 1 } })
+    '';
+
+    # zed settings;
+    xdg.stateFile."omarchy/defaults/editor".text = "zeditor\n";
+    services.nixi.enable = false;
+    programs.zed-editor = {
+      enable = true;
+      mutableUserSettings = true;
+      userSettings = {
+        project_panel.dock = "left";
+        ui_font_size = 16;
+        buffer_font_size = 15;
+        theme = "Omarchy";
+      };
+    };
+
+    programs.nixarchy = {
+      enable = true;
+      # Use the built-in Omarchy widgets. Disable each plugin the port offers.
+      defaultPlugins = lib.mapAttrs (_: _: false) config.programs.nixarchy.defaultPluginSet;
+      plugins.omamail.src = pkgs.fetchzip {
+        url = "https://codeload.github.com/huacnlee/omamail/tar.gz/031462561b4e36f7f19ac8242727ad281c10e82f";
+        extension = "tar.gz";
+        sha256 = "1r55ylw9zg9r2zj2phhics4m1ib35yiaz5jw1zmq547xlbv1nil1";
+      };
+    };
+  };
 }

@@ -12,18 +12,16 @@
   outputs = { nixpkgs, nixarchy, ... }: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = { inherit nixarchy; };
       modules = [
         nixarchy.nixosModules.nixarchy
         ./configuration.nix
+        ./home.nix
         {
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            backupFileExtension = "before-nixos-config";
-            users.adamf.imports = [
-              nixarchy.homeManagerModules.nixarchy
-              ./home.nix
-            ];
+            backupFileExtension = "before";
           };
         }
       ];

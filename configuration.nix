@@ -92,14 +92,6 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  environment.systemPackages = with pkgs; [
-    bubblewrap
-    codex
-    localsend
-    nodejs
-    pdfcraft
-  ];
-
   system.stateVersion = "26.05";
 
   nix.settings = {
